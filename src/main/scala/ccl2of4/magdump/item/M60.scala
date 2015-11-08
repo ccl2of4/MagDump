@@ -11,6 +11,6 @@ object M60 extends AutomaticFirearm(50, "thirtyCal", classOf[ThirtyCal], 50, 5) 
   setCreativeTab(CreativeTabs.tabCombat)
 
   protected override def makeCartridge(world: World, entityLiving: EntityLivingBase, deviation: Float): Cartridge =
-    new ThirtyCal(world, entityLiving, deviation)
+    new ThirtyCal(world, entityLiving)
 
 }

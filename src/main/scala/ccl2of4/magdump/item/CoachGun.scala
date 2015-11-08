@@ -11,6 +11,6 @@ object CoachGun extends SemiAutomaticFirearm(50, "buckShot", classOf[BuckShot], 
   setCreativeTab(CreativeTabs.tabCombat)
 
   protected override def makeCartridge(world: World, entityLiving: EntityLivingBase, deviation: Float): Cartridge =
-    new BuckShot(world, entityLiving, deviation)
+    new BuckShot(world, entityLiving)
 
 }
