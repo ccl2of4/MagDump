@@ -1,4 +1,4 @@
-package ccl2of4.magdump.item
+package ccl2of4.magdump.items
 
 import ccl2of4.magdump.entity.Cartridge
 import net.minecraft.entity.player.EntityPlayer

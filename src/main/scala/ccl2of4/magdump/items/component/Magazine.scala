@@ -1,4 +1,4 @@
-package ccl2of4.magdump.item.component
+package ccl2of4.magdump.items.component
 
 import ccl2of4.magdump.{MagDump, ItemStackMagDumpAddOns}
 import ccl2of4.magdump.entity.Cartridge

@@ -1,8 +1,8 @@
-package ccl2of4.magdump.item
+package ccl2of4.magdump.items
 
 import ccl2of4.magdump.MagDump
 import ccl2of4.magdump.entity.Cartridge
-import ccl2of4.magdump.item.component.Magazine
+import ccl2of4.magdump.items.component.Magazine
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer

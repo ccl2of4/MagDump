@@ -1,7 +1,7 @@
 package ccl2of4.magdump
 
 import ccl2of4.magdump.entity.{BuckShot, ThirtyCal}
-import ccl2of4.magdump.item.{CoachGun, M60, Firearm}
+import ccl2of4.magdump.items.{CoachGun, M60, Firearm}
 import cpw.mods.fml.common.Mod
 import cpw.mods.fml.common.Mod.EventHandler
 import cpw.mods.fml.common.event.FMLPreInitializationEvent
