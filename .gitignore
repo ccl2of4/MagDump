@@ -34,6 +34,7 @@ hs_err_pid*
 #Eclipse
 .classpath
 .project
+eclipse/
 
 #mac
 .DS_Store
