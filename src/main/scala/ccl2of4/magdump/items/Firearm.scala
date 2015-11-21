@@ -1,17 +1,15 @@
 package ccl2of4.magdump.items
 
-import ccl2of4.magdump.MagDump
-import ccl2of4.magdump.entity.Cartridge
+import ccl2of4.magdump.ItemStackMagDumpAddOns
+import ccl2of4.magdump.entity.EntityCartridge
 import ccl2of4.magdump.items.component.Magazine
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.projectile.EntityArrow
-import net.minecraft.item.{EnumAction, ItemStack, Item}
-import ccl2of4.magdump.ItemStackMagDumpAddOns
+import net.minecraft.item.{EnumAction, Item, ItemStack}
 import net.minecraft.world.World
 
-abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: Class[_ <: Cartridge], magazineCapacity: Int) extends Item {
+abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: Class[_ <: EntityCartridge], magazineCapacity: Int) extends Item {
 
   setCreativeTab(CreativeTabs.tabCombat)
 
@@ -103,13 +101,12 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
     recoil(entityPlayer)
 
     if (!world.isRemote) {
-      val cartridge = new EntityArrow(world, entityPlayer, 1)
+      val cartridge = cartridgeClass.getConstructor(classOf[World], classOf[EntityLivingBase])
+        .newInstance(world, entityPlayer)
       world.spawnEntityInWorld(cartridge)
     }
 
   }
-
-  protected def makeCartridge(world: World, entityLiving: EntityLivingBase, deviation: Float): Cartridge
 
   protected def reloadClick(entityPlayer: EntityPlayer): Unit =
     entityPlayer.worldObj.playSoundAtEntity(entityPlayer, "random.click", 1.0F, 3.0F)
@@ -133,7 +130,7 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
 
   protected def smoke(entityPlayer: EntityPlayer): Unit =
     0.until(3).foreach { i: Int =>
-      entityPlayer.worldObj.spawnParticle("smoke", entityPlayer.posX, entityPlayer.posY, entityPlayer.posZ, 0, 0, 0)
+      // entityPlayer.worldObj.spawnParticle("smoke", entityPlayer.posX, entityPlayer.posY, entityPlayer.posZ, 0, 0, 0)
     }
 
   protected def state(itemStack: ItemStack) =

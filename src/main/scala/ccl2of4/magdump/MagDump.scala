@@ -1,7 +1,6 @@
 package ccl2of4.magdump
 
-import ccl2of4.magdump.entity.ThirtyCal
-import ccl2of4.magdump.entity.{BuckShot, ThirtyCal}
+import ccl2of4.magdump.entity.{EntityBuckShot, EntityThirtyCal}
 import ccl2of4.magdump.items._
 import cpw.mods.fml.common.Mod
 import cpw.mods.fml.common.Mod.EventHandler
@@ -28,8 +27,8 @@ object MagDump {
     GameRegistry.registerItem(CoachGun, "coachGun")
     GameRegistry.registerItem(ThirtyCal, "thirtyCal")
     GameRegistry.registerItem(BuckShot, "buckShot")
-    EntityRegistry.registerModEntity(classOf[ThirtyCal], "thirtyCal", 11, this, 16, 20, true)
-    EntityRegistry.registerModEntity(classOf[BuckShot], "buckShot", 11, this, 16, 20, true)
+    EntityRegistry.registerModEntity(classOf[EntityThirtyCal], "thirtyCal", 11, this, 16, 20, true)
+    EntityRegistry.registerModEntity(classOf[EntityBuckShot], "buckShot", 11, this, 16, 20, true)
   }
 
 }
