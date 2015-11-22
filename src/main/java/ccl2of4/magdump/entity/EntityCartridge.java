@@ -12,15 +12,11 @@ public abstract class EntityCartridge extends EntityThrowable {
     {
         super(world);
     }
-
-    public EntityCartridge(World world, EntityLivingBase entityLiving)
-    {
-        super(world, entityLiving);
-    }
-
-    public EntityCartridge(World world, double x, double y, double z)
-    {
+    public EntityCartridge(World world, double x, double y, double z) {
         super(world, x, y, z);
+    }
+    public EntityCartridge(World world, EntityLivingBase entityLiving) {
+        super(world, entityLiving);
     }
 
     public float getMuzzleVelocity() {
@@ -38,12 +34,12 @@ public abstract class EntityCartridge extends EntityThrowable {
 
     @Override
     protected void onImpact(MovingObjectPosition movingObjectPosition) {
-        if (movingObjectPosition.entityHit != null) {
-            movingObjectPosition.entityHit.attackEntityFrom(DamageSource.causeThrownDamage(this, this.getThrower()), 1.0f);
+        if (movingObjectPosition.entityHit == null) {
+            return;
         }
-        if (!this.worldObj.isRemote) {
-            this.setDead();
-        }
+
+        movingObjectPosition.entityHit.attackEntityFrom(DamageSource.causeThrownDamage(this, this.getThrower()), 1.0f);
+        setDead();
     }
 
     @Override

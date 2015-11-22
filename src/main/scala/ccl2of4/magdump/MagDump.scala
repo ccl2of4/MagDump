@@ -2,10 +2,13 @@ package ccl2of4.magdump
 
 import ccl2of4.magdump.entity.{EntityBuckShot, EntityThirtyCal}
 import ccl2of4.magdump.items._
+import ccl2of4.magdump.render.RenderCartridge
+import cpw.mods.fml.client.registry.RenderingRegistry
 import cpw.mods.fml.common.Mod
 import cpw.mods.fml.common.Mod.EventHandler
-import cpw.mods.fml.common.event.FMLPreInitializationEvent
+import cpw.mods.fml.common.event.{FMLInitializationEvent, FMLPreInitializationEvent}
 import cpw.mods.fml.common.registry.{EntityRegistry, GameRegistry}
+import cpw.mods.fml.relauncher.{Side, SideOnly}
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.item.{Item, ItemBow}
 import org.apache.logging.log4j.Logger
@@ -16,19 +19,27 @@ object MagDump {
   var log : Logger = null
 
   @EventHandler
-  def preInit(event: FMLPreInitializationEvent): Unit = {
+  def initLog(event: FMLPreInitializationEvent): Unit = {
     log = event.getModLog
-    registerItems()
   }
 
-  def registerItems(): Unit = {
-    log.info("Registering Items")
+  @EventHandler
+  def registerItems(event: FMLInitializationEvent): Unit = {
+    log.info("Registering items.")
     GameRegistry.registerItem(M60, "m60")
     GameRegistry.registerItem(CoachGun, "coachGun")
     GameRegistry.registerItem(ThirtyCal, "thirtyCal")
     GameRegistry.registerItem(BuckShot, "buckShot")
     EntityRegistry.registerModEntity(classOf[EntityThirtyCal], "thirtyCal", 11, this, 16, 20, true)
     EntityRegistry.registerModEntity(classOf[EntityBuckShot], "buckShot", 11, this, 16, 20, true)
+  }
+
+  @EventHandler
+  @SideOnly(Side.CLIENT)
+  def registerRenderers(event: FMLInitializationEvent): Unit = {
+    log.info("Registering renderers,")
+    RenderingRegistry.registerEntityRenderingHandler(classOf[EntityThirtyCal], RenderCartridge)
+    RenderingRegistry.registerEntityRenderingHandler(classOf[EntityBuckShot], RenderCartridge)
   }
 
 }
