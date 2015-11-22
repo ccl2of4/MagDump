@@ -24,18 +24,14 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class EntityCartridge extends EntityArrow implements IThrowableEntity
 {
-    public static final int	NO_PICKUP	= 0, PICKUP_ALL = 1, PICKUP_CREATIVE = 2, PICKUP_OWNER = 3;
-
     protected int			xTile;
     protected int			yTile;
     protected int			zTile;
     protected Block			inTile;
     protected int			inData;
     protected boolean		inGround;
-    public int				pickupMode;
     protected int			ticksInGround;
     protected int			ticksInAir;
-    public boolean			beenInGround;
 
     public float			extraDamage;
     public int				knockBack;
@@ -49,10 +45,8 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
         inTile = null;
         inData = 0;
         inGround = false;
-        arrowShake = 0;
         ticksInAir = 0;
         yOffset = 0F;
-        pickupMode = NO_PICKUP;
 
         extraDamage = 0;
         knockBack = 0;
@@ -81,12 +75,6 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
 
     public float getSpread() {
         return 2.0F;
-    }
-
-    @Override
-    protected void entityInit()
-    {
-        super.entityInit();
     }
 
     @Override
@@ -140,15 +128,7 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
     }
 
     @Override
-    public void onUpdate()
-    {
-        onEntityUpdate();
-    }
-
-    @Override
-    public void onEntityUpdate()
-    {
-        super.onEntityUpdate();
+    public void onUpdate() {
 
         if (aimRotation()/* && prevRotationPitch == 0.0F && prevRotationYaw == 0.0F*/)
         {
@@ -166,11 +146,6 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
             {
                 inGround = true;
             }
-        }
-
-        if (arrowShake > 0)
-        {
-            arrowShake--;
         }
 
         if (inGround)
@@ -283,7 +258,6 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
         float grav = getGravity();
         if (isInWater())
         {
-            beenInGround = true;
             for (int i1 = 0; i1 < 4; i1++)
             {
                 float f6 = 0.25F;
@@ -350,9 +324,7 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
         posY -= motionY / f1 * 0.05D;
         posZ -= motionZ / f1 * 0.05D;
         inGround = true;
-        beenInGround = true;
         setIsCritical(false);
-        arrowShake = getMaxArrowShake();
         playHitSound();
 
         if (inTile != null)
@@ -386,11 +358,6 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
         return 1200;
     }
 
-    public ItemStack getPickupItem()
-    {
-        return null;
-    }
-
     public float getAirResistance()
     {
         return 0.99F;
@@ -399,11 +366,6 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
     public float getGravity()
     {
         return 0.05F;
-    }
-
-    public int getMaxArrowShake()
-    {
-        return 7;
     }
 
     public void playHitSound()
@@ -441,61 +403,6 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
         knockBack = i;
     }
 
-    public void setPickupMode(int i)
-    {
-        pickupMode = i;
-    }
-
-    public int getPickupMode()
-    {
-        return pickupMode;
-    }
-
-    public boolean canPickup(EntityPlayer entityplayer)
-    {
-        if (pickupMode == PICKUP_ALL)
-        {
-            return true;
-        } else if (pickupMode == PICKUP_CREATIVE)
-        {
-            return entityplayer.capabilities.isCreativeMode;
-        } else if (pickupMode == PICKUP_OWNER)
-        {
-            return entityplayer == shootingEntity;
-        } else
-        {
-            return false;
-        }
-    }
-
-    @Override
-    public void onCollideWithPlayer(EntityPlayer entityplayer)
-    {
-        if (inGround && arrowShake <= 0)
-        {
-            if (canPickup(entityplayer))
-            {
-                if (!worldObj.isRemote)
-                {
-                    ItemStack item = getPickupItem();
-                    if (item == null) return;
-
-                    if (pickupMode == PICKUP_CREATIVE && entityplayer.capabilities.isCreativeMode || entityplayer.inventory.addItemStackToInventory(item))
-                    {
-                        worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-                        onItemPickup(entityplayer);
-                        setDead();
-                    }
-                }
-            }
-        }
-    }
-
-    protected void onItemPickup(EntityPlayer entityplayer)
-    {
-        entityplayer.onItemPickup(this, 1);
-    }
-
     @Override
     @SideOnly(Side.CLIENT)
     public float getShadowSize()
@@ -519,8 +426,6 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
         nbttagcompound.setByte("inData", (byte) inData);
         nbttagcompound.setByte("shake", (byte) arrowShake);
         nbttagcompound.setBoolean("inGround", inGround);
-        nbttagcompound.setBoolean("beenInGround", beenInGround);
-        nbttagcompound.setByte("pickup", (byte) pickupMode);
     }
 
     @Override
@@ -531,9 +436,6 @@ public abstract class EntityCartridge extends EntityArrow implements IThrowableE
         zTile = nbttagcompound.getShort("zTile");
         inTile = Block.getBlockById(nbttagcompound.getByte("inTile") & 0xFF);
         inData = nbttagcompound.getByte("inData") & 0xFF;
-        arrowShake = nbttagcompound.getByte("shake") & 0xFF;
         inGround = nbttagcompound.getBoolean("inGround");
-        beenInGround = nbttagcompound.getBoolean("beenInGrond");
-        pickupMode = nbttagcompound.getByte("pickup");
     }
 }
