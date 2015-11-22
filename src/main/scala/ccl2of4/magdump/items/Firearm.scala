@@ -9,7 +9,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{EnumAction, Item, ItemStack}
 import net.minecraft.world.World
 
-abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: Class[_ <: EntityCartridge], magazineCapacity: Int) extends Item {
+abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: Class[_ <: Entity], magazineCapacity: Int) extends Item {
 
   setCreativeTab(CreativeTabs.tabCombat)
 
@@ -146,7 +146,7 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
 
   private def magazine = {
     if (null == _magazine) {
-      _magazine = new Magazine(cartridgeName, cartridgeClass, magazineCapacity)
+      _magazine = new Magazine(cartridgeName, classOf[EntityCartridge], magazineCapacity)
     }
     _magazine
   }
