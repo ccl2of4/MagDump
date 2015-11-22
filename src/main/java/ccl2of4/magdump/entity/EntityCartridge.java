@@ -1,306 +1,539 @@
 package ccl2of4.magdump.entity;
 
-import cpw.mods.fml.common.registry.IThrowableEntity;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IProjectile;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.*;
-import net.minecraft.world.World;
-
 import java.util.List;
 
-public abstract class EntityCartridge extends Entity implements IProjectile, IThrowableEntity {
+import net.minecraft.block.Block;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.S2BPacketChangeGameState;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
+import cpw.mods.fml.common.registry.IThrowableEntity;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-    public EntityCartridge(World world) {
+public abstract class EntityCartridge extends EntityArrow implements IThrowableEntity
+{
+    public static final int	NO_PICKUP	= 0, PICKUP_ALL = 1, PICKUP_CREATIVE = 2, PICKUP_OWNER = 3;
+
+    protected int			xTile;
+    protected int			yTile;
+    protected int			zTile;
+    protected Block			inTile;
+    protected int			inData;
+    protected boolean		inGround;
+    public int				pickupMode;
+    protected int			ticksInGround;
+    protected int			ticksInAir;
+    public boolean			beenInGround;
+
+    public float			extraDamage;
+    public int				knockBack;
+
+    public EntityCartridge(World world)
+    {
         super(world);
-        this.setSize(0.25F, 0.25F);
+        xTile = -1;
+        yTile = -1;
+        zTile = -1;
+        inTile = null;
+        inData = 0;
+        inGround = false;
+        arrowShake = 0;
+        ticksInAir = 0;
+        yOffset = 0F;
+        pickupMode = NO_PICKUP;
+
+        extraDamage = 0;
+        knockBack = 0;
+
+        setSize(0.5F, 0.5F);
     }
 
     public EntityCartridge(World world, Entity entity) {
-        super(world);
-        this.thrower = entity;
-        this.setSize(0.25F, 0.25F);
-        this.setLocationAndAngles(entity.posX, entity.posY + (double)entity.getEyeHeight(), entity.posZ, entity.rotationYaw, entity.rotationPitch);
-        this.posX -= (double)(MathHelper.cos(this.rotationYaw / 180.0F * (float)Math.PI) * 0.16F);
-        this.posY -= 0.10000000149011612D;
-        this.posZ -= (double)(MathHelper.sin(this.rotationYaw / 180.0F * (float)Math.PI) * 0.16F);
-        this.setPosition(this.posX, this.posY, this.posZ);
-        this.yOffset = 0.0F;
-        float f = 0.4F;
-        this.motionX = (double)(-MathHelper.sin(this.rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI) * f);
-        this.motionZ = (double)(MathHelper.cos(this.rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI) * f);
-        this.motionY = (double)(-MathHelper.sin((this.rotationPitch) / 180.0F * (float)Math.PI) * f);
-        this.setThrowableHeading(this.motionX, this.motionY, this.motionZ, this.getMuzzleVelocity(), 0.0F);
-    }
-
-    public EntityCartridge(World world, double x, double y, double z) {
-        super(world);
-        this.ticksInGround = 0;
-        this.setSize(0.25F, 0.25F);
-        this.setPosition(x, y, z);
-        this.yOffset = 0.0F;
+        this(world);
+        shootingEntity = entity;
+        setLocationAndAngles(entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ, entity.rotationYaw, entity.rotationPitch);
+        posX -= MathHelper.cos((rotationYaw / 180F) * 3.141593F) * 0.16F;
+        posY -= 0.1D;
+        posZ -= MathHelper.sin((rotationYaw / 180F) * 3.141593F) * 0.16F;
+        setPosition(posX, posY, posZ);
+        yOffset = 0.0F;
+        motionX = -MathHelper.sin((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F);
+        motionZ = MathHelper.cos((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F);
+        motionY = -MathHelper.sin((rotationPitch / 180F) * 3.141593F);
+        setThrowableHeading(motionX, motionY, motionZ, getMuzzleVelocity(), getSpread());
     }
 
     public float getMuzzleVelocity() {
-        return muzzleVelocity;
+        return 5.0F;
     }
-    public void setMuzzleVelocity(float muzzleVelocity) {
-        this.muzzleVelocity = muzzleVelocity;
-    }
+
     public float getSpread() {
-        return spread;
-    }
-    public void setSpread(float spread) {
-        this.spread = spread;
+        return 2.0F;
     }
 
     @Override
-    protected void entityInit() {
-        setMuzzleVelocity(5.0f);
-        setSpread(0.0F);
+    protected void entityInit()
+    {
+        super.entityInit();
     }
 
     @Override
-    public void setThrowableHeading(double x, double y, double z, float speed, float deviation) {
+    public Entity getThrower()
+    {
+        return shootingEntity;
+    }
+
+    @Override
+    public void setThrower(Entity entity)
+    {
+        shootingEntity = entity;
+    }
+
+    @Override
+    public void setThrowableHeading(double x, double y, double z, float speed, float deviation)
+    {
         float f2 = MathHelper.sqrt_double(x * x + y * y + z * z);
         x /= f2;
         y /= f2;
         z /= f2;
-        x += this.rand.nextGaussian() * 0.007499999832361937D * deviation;
-        y += this.rand.nextGaussian() * 0.007499999832361937D * deviation;
-        z += this.rand.nextGaussian() * 0.007499999832361937D * deviation;
+        x += rand.nextGaussian() * 0.0075F * deviation;
+        y += rand.nextGaussian() * 0.0075F * deviation;
+        z += rand.nextGaussian() * 0.0075F * deviation;
         x *= speed;
         y *= speed;
         z *= speed;
-        this.motionX = x;
-        this.motionY = y;
-        this.motionZ = z;
+        motionX = x;
+        motionY = y;
+        motionZ = z;
         float f3 = MathHelper.sqrt_double(x * x + z * z);
-        this.prevRotationYaw = this.rotationYaw = (float)(Math.atan2(x, z) * 180.0D / Math.PI);
-        this.prevRotationPitch = this.rotationPitch = (float)(Math.atan2(y, f3) * 180.0D / Math.PI);
-        this.ticksInGround = 0;
+        prevRotationYaw = rotationYaw = (float) ((Math.atan2(x, z) * 180D) / Math.PI);
+        prevRotationPitch = rotationPitch = (float) ((Math.atan2(y, f3) * 180D) / Math.PI);
+        ticksInGround = 0;
+    }
+
+    @Override
+    public void setVelocity(double d, double d1, double d2)
+    {
+        motionX = d;
+        motionY = d1;
+        motionZ = d2;
+        if (aimRotation() && prevRotationPitch == 0.0F && prevRotationYaw == 0.0F)
+        {
+            float f = MathHelper.sqrt_double(d * d + d2 * d2);
+            prevRotationYaw = rotationYaw = (float) ((Math.atan2(d, d2) * 180D) / Math.PI);
+            prevRotationPitch = rotationPitch = (float) ((Math.atan2(d1, f) * 180D) / Math.PI);
+            setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
+            ticksInGround = 0;
+        }
     }
 
     @Override
     public void onUpdate()
     {
-        this.lastTickPosX = this.posX;
-        this.lastTickPosY = this.posY;
-        this.lastTickPosZ = this.posZ;
-        super.onUpdate();
+        onEntityUpdate();
+    }
 
-        if (this.inGround) {
+    @Override
+    public void onEntityUpdate()
+    {
+        super.onEntityUpdate();
 
-            if (this.worldObj.getBlock(this.xTile, this.yTile, this.zTile) == this.inTile) {
-                ++this.ticksInGround;
-
-                if (this.ticksInGround >= 200) {
-                    this.setDead();
-                }
-
-                return;
-            }
-
-            this.inGround = false;
-            this.ticksInGround = 0;
-            this.ticksInAir = 0;
-        }
-        else
+        if (aimRotation()/* && prevRotationPitch == 0.0F && prevRotationYaw == 0.0F*/)
         {
-            ++this.ticksInAir;
+            float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+            prevRotationYaw = rotationYaw = (float) ((Math.atan2(motionX, motionZ) * 180D) / Math.PI);
+            prevRotationPitch = rotationPitch = (float) ((Math.atan2(motionY, f) * 180D) / Math.PI);
         }
 
-        Vec3 vec3 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-        Vec3 vec31 = Vec3.createVectorHelper(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-        MovingObjectPosition movingobjectposition = this.worldObj.rayTraceBlocks(vec3, vec31);
-        vec3 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-        vec31 = Vec3.createVectorHelper(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+        Block i = worldObj.getBlock(xTile, yTile, zTile);
+        if (i != null)
+        {
+            i.setBlockBoundsBasedOnState(worldObj, xTile, yTile, zTile);
+            AxisAlignedBB axisalignedbb = i.getCollisionBoundingBoxFromPool(worldObj, xTile, yTile, zTile);
+            if (axisalignedbb != null && axisalignedbb.isVecInside(Vec3.createVectorHelper(posX, posY, posZ)))
+            {
+                inGround = true;
+            }
+        }
 
+        if (arrowShake > 0)
+        {
+            arrowShake--;
+        }
+
+        if (inGround)
+        {
+            Block j = worldObj.getBlock(xTile, yTile, zTile);
+            int k = worldObj.getBlockMetadata(xTile, yTile, zTile);
+            if (j == inTile && k == inData)
+            {
+                ticksInGround++;
+                int t = getMaxLifetime();
+                if (t != 0 && ticksInGround >= t)
+                {
+                    setDead();
+                }
+            } else
+            {
+                inGround = false;
+                motionX *= rand.nextFloat() * 0.2F;
+                motionY *= rand.nextFloat() * 0.2F;
+                motionZ *= rand.nextFloat() * 0.2F;
+                ticksInGround = 0;
+                ticksInAir = 0;
+            }
+            return;
+        }
+
+        ticksInAir++;
+
+        Vec3 vec3d = Vec3.createVectorHelper(posX, posY, posZ);
+        Vec3 vec3d1 = Vec3.createVectorHelper(posX + motionX, posY + motionY, posZ + motionZ);
+        MovingObjectPosition movingobjectposition = worldObj.func_147447_a(vec3d, vec3d1, false, true, false);
+        vec3d = Vec3.createVectorHelper(posX, posY, posZ);
+        vec3d1 = Vec3.createVectorHelper(posX + motionX, posY + motionY, posZ + motionZ);
         if (movingobjectposition != null)
         {
-            vec31 = Vec3.createVectorHelper(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
+            vec3d1 = Vec3.createVectorHelper(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
         }
 
         Entity entity = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ).expand(1.0D, 1.0D, 1.0D));
-        double d0 = 0.0D;
-
-        for (int j = 0; j < list.size(); ++j)
+        @SuppressWarnings("unchecked")
+        List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+        double d = 0.0D;
+        for (int l = 0; l < list.size(); l++)
         {
-            Entity entity1 = (Entity)list.get(j);
-
-            if (entity1.canBeCollidedWith() && (entity1 != getThrower() || this.ticksInAir >= 5))
+            Entity entity1 = list.get(l);
+            if (!entity1.canBeCollidedWith() || entity1 == shootingEntity && ticksInAir < 5)
             {
-                float f = 0.3F;
-                AxisAlignedBB axisalignedbb = entity1.boundingBox.expand((double)f, (double)f, (double)f);
-                MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(vec3, vec31);
-
-                if (movingobjectposition1 != null)
-                {
-                    double d1 = vec3.distanceTo(movingobjectposition1.hitVec);
-
-                    if (d1 < d0 || d0 == 0.0D)
-                    {
-                        entity = entity1;
-                        d0 = d1;
-                    }
-                }
+                continue;
             }
-
-            if (entity != null)
+            float f4 = 0.3F;
+            AxisAlignedBB axisalignedbb1 = entity1.boundingBox.expand(f4, f4, f4);
+            MovingObjectPosition movingobjectposition1 = axisalignedbb1.calculateIntercept(vec3d, vec3d1);
+            if (movingobjectposition1 == null)
             {
-                movingobjectposition = new MovingObjectPosition(entity);
+                continue;
             }
+            double d1 = vec3d.distanceTo(movingobjectposition1.hitVec);
+            if (d1 < d || d == 0.0D)
+            {
+                entity = entity1;
+                d = d1;
+            }
+        }
+
+        if (entity != null)
+        {
+            movingobjectposition = new MovingObjectPosition(entity);
         }
 
         if (movingobjectposition != null)
         {
-            if (movingobjectposition.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && this.worldObj.getBlock(movingobjectposition.blockX, movingobjectposition.blockY, movingobjectposition.blockZ) == Blocks.portal)
+            if (movingobjectposition.entityHit != null)
             {
-                this.setInPortal();
-            }
-            else
+                onEntityHit(movingobjectposition.entityHit);
+            } else
             {
-                this.onImpact(movingobjectposition);
+                onGroundHit(movingobjectposition);
             }
         }
 
-        this.posX += this.motionX;
-        this.posY += this.motionY;
-        this.posZ += this.motionZ;
-        float f1 = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
-        this.rotationYaw = (float)(Math.atan2(this.motionX, this.motionZ) * 180.0D / Math.PI);
-
-        for (this.rotationPitch = (float)(Math.atan2(this.motionY, (double)f1) * 180.0D / Math.PI);
-             this.rotationPitch - this.prevRotationPitch < -180.0F;
-             this.prevRotationPitch -= 360.0F) ;
-
-        while (this.rotationPitch - this.prevRotationPitch >= 180.0F) {
-            this.prevRotationPitch += 360.0F;
-        }
-
-        while (this.rotationYaw - this.prevRotationYaw < -180.0F) {
-            this.prevRotationYaw -= 360.0F;
-        }
-
-        while (this.rotationYaw - this.prevRotationYaw >= 180.0F) {
-            this.prevRotationYaw += 360.0F;
-        }
-
-        this.rotationPitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * 0.2F;
-        this.rotationYaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * 0.2F;
-        float resistance = 0.99F;
-        float gravity = this.getGravityVelocity();
-
-        if (this.isInWater()) {
-            for (int i = 0; i < 4; ++i) {
-                float f4 = 0.25F;
-                this.worldObj.spawnParticle("bubble", this.posX - this.motionX * (double)f4, this.posY - this.motionY * (double)f4, this.posZ - this.motionZ * (double)f4, this.motionX, this.motionY, this.motionZ);
+        if (getIsCritical())
+        {
+            for (int i1 = 0; i1 < 2; i1++)
+            {
+                worldObj.spawnParticle("crit", posX + (motionX * i1) / 4D, posY + (motionY * i1) / 4D, posZ + (motionZ * i1) / 4D, -motionX, -motionY + 0.2D, -motionZ);
             }
-            resistance = 0.8F;
         }
 
-        this.motionX *= (double)resistance;
-        this.motionY *= (double)resistance;
-        this.motionZ *= (double)resistance;
-        this.motionY -= (double)gravity;
-        this.setPosition(this.posX, this.posY, this.posZ);
+        posX += motionX;
+        posY += motionY;
+        posZ += motionZ;
+
+        if (aimRotation())
+        {
+            float f2 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+            rotationYaw = (float) ((Math.atan2(motionX, motionZ) * 180D) / Math.PI);
+            for (rotationPitch = (float) ((Math.atan2(motionY, f2) * 180D) / Math.PI); rotationPitch - prevRotationPitch < -180F; prevRotationPitch -= 360F)
+            {}
+            for (; rotationPitch - prevRotationPitch >= 180F; prevRotationPitch += 360F)
+            {}
+            for (; rotationYaw - prevRotationYaw < -180F; prevRotationYaw -= 360F)
+            {}
+            for (; rotationYaw - prevRotationYaw >= 180F; prevRotationYaw += 360F)
+            {}
+            rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
+            rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
+        }
+
+        float res = getAirResistance();
+        float grav = getGravity();
+        if (isInWater())
+        {
+            beenInGround = true;
+            for (int i1 = 0; i1 < 4; i1++)
+            {
+                float f6 = 0.25F;
+                worldObj.spawnParticle("bubble", posX - motionX * f6, posY - motionY * f6, posZ - motionZ * f6, motionX, motionY, motionZ);
+            }
+
+            res *= 0.80808080F;
+        }
+        motionX *= res;
+        motionY *= res;
+        motionZ *= res;
+        motionY -= grav;
+        setPosition(posX, posY, posZ);
+        func_145775_I();
     }
 
-    protected float getGravityVelocity() {
-        return 0.03F;
+    public void onEntityHit(Entity entity)
+    {
+        bounceBack();
+        applyEntityHitEffects(entity);
     }
 
-    protected void onImpact(MovingObjectPosition movingObjectPosition) {
-        if (movingObjectPosition.entityHit == null) {
-            onGroundImpact(movingObjectPosition);
-        } else {
-            onEntityImpact(movingObjectPosition);
+    public void applyEntityHitEffects(Entity entity)
+    {
+        if (isBurning() && !(entity instanceof EntityEnderman))
+        {
+            entity.setFire(5);
+        }
+        if (entity instanceof EntityLivingBase)
+        {
+            EntityLivingBase entityliving = (EntityLivingBase) entity;
+            if (knockBack > 0)
+            {
+                float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+                if (f > 0.0F)
+                {
+                    entity.addVelocity(motionX * knockBack * 0.6D / f, 0.1D, motionZ * knockBack * 0.6D / f);
+                }
+            }
+            if (shootingEntity instanceof EntityLivingBase)
+            {
+                EnchantmentHelper.func_151384_a(entityliving, this.shootingEntity);
+                EnchantmentHelper.func_151385_b((EntityLivingBase) this.shootingEntity, entityliving);
+            }
+            if (shootingEntity instanceof EntityPlayerMP && shootingEntity != entity && entity instanceof EntityPlayer)
+            {
+                ((EntityPlayerMP) shootingEntity).playerNetServerHandler.sendPacket(new S2BPacketChangeGameState(6, 0));
+            }
         }
     }
 
-    void onEntityImpact(MovingObjectPosition movingObjectPosition) {
-        Entity entity = movingObjectPosition.entityHit;
-        int prevHurtResistantTime = entity.hurtResistantTime;
-        entity.attackEntityFrom(DamageSource.causeThrownDamage(this, getThrower()), 1.0f);
-        entity.hurtResistantTime = prevHurtResistantTime;
-        setDead();
-    }
-
-    void onGroundImpact(MovingObjectPosition movingObjectPosition) {
-        xTile = movingObjectPosition.blockX;
-        yTile = movingObjectPosition.blockY;
-        zTile = movingObjectPosition.blockZ;
+    public void onGroundHit(MovingObjectPosition mop)
+    {
+        xTile = mop.blockX;
+        yTile = mop.blockY;
+        zTile = mop.blockZ;
         inTile = worldObj.getBlock(xTile, yTile, zTile);
-
-        motionX = movingObjectPosition.hitVec.xCoord - posX;
-        motionY = movingObjectPosition.hitVec.yCoord - posY;
-        motionZ = movingObjectPosition.hitVec.zCoord - posZ;
+        inData = worldObj.getBlockMetadata(xTile, yTile, zTile);
+        motionX = mop.hitVec.xCoord - posX;
+        motionY = mop.hitVec.yCoord - posY;
+        motionZ = mop.hitVec.zCoord - posZ;
         float f1 = MathHelper.sqrt_double(motionX * motionX + motionY * motionY + motionZ * motionZ);
         posX -= motionX / f1 * 0.05D;
         posY -= motionY / f1 * 0.05D;
         posZ -= motionZ / f1 * 0.05D;
         inGround = true;
+        beenInGround = true;
+        setIsCritical(false);
+        arrowShake = getMaxArrowShake();
+        playHitSound();
 
-        if (inTile != null) {
+        if (inTile != null)
+        {
             inTile.onEntityCollidedWithBlock(worldObj, xTile, yTile, zTile, this);
         }
-
     }
 
-    public void setThrower(Entity entity) {
-        thrower = entity;
+    protected void bounceBack()
+    {
+        motionX *= -0.1D;
+        motionY *= -0.1D;
+        motionZ *= -0.1D;
+        rotationYaw += 180F;
+        prevRotationYaw += 180F;
+        ticksInAir = 0;
     }
 
-    public Entity getThrower() {
-        if (this.thrower == null && this.throwerName != null && this.throwerName.length() > 0) {
-            this.thrower = this.worldObj.getPlayerEntityByName(this.throwerName);
+    public final double getTotalVelocity()
+    {
+        return Math.sqrt(motionX * motionX + motionY * motionY + motionZ * motionZ);
+    }
+
+    public boolean aimRotation()
+    {
+        return true;
+    }
+
+    public int getMaxLifetime()
+    {
+        return 1200;
+    }
+
+    public ItemStack getPickupItem()
+    {
+        return null;
+    }
+
+    public float getAirResistance()
+    {
+        return 0.99F;
+    }
+
+    public float getGravity()
+    {
+        return 0.05F;
+    }
+
+    public int getMaxArrowShake()
+    {
+        return 7;
+    }
+
+    public void playHitSound()
+    {
+    }
+
+    public boolean canBeCritical()
+    {
+        return false;
+    }
+
+    @Override
+    public void setIsCritical(boolean flag)
+    {
+        if (canBeCritical())
+        {
+            dataWatcher.updateObject(16, Byte.valueOf((byte) (flag ? 1 : 0)));
         }
-        return this.thrower;
     }
 
-    public void writeEntityToNBT(NBTTagCompound p_70014_1_) {
-        p_70014_1_.setShort("xTile", (short)this.xTile);
-        p_70014_1_.setShort("yTile", (short)this.yTile);
-        p_70014_1_.setShort("zTile", (short)this.zTile);
-        p_70014_1_.setByte("inTile", (byte)Block.getIdFromBlock(this.inTile));
-        p_70014_1_.setByte("inGround", (byte)(this.inGround ? 1 : 0));
+    @Override
+    public boolean getIsCritical()
+    {
+        return canBeCritical() && dataWatcher.getWatchableObjectByte(16) != 0;
+    }
 
-        if ((this.throwerName == null || this.throwerName.length() == 0) && this.thrower != null && this.thrower instanceof EntityPlayer) {
-            this.throwerName = this.thrower.getCommandSenderName();
+    public void setExtraDamage(float f)
+    {
+        extraDamage = f;
+    }
+
+    @Override
+    public void setKnockbackStrength(int i)
+    {
+        knockBack = i;
+    }
+
+    public void setPickupMode(int i)
+    {
+        pickupMode = i;
+    }
+
+    public int getPickupMode()
+    {
+        return pickupMode;
+    }
+
+    public boolean canPickup(EntityPlayer entityplayer)
+    {
+        if (pickupMode == PICKUP_ALL)
+        {
+            return true;
+        } else if (pickupMode == PICKUP_CREATIVE)
+        {
+            return entityplayer.capabilities.isCreativeMode;
+        } else if (pickupMode == PICKUP_OWNER)
+        {
+            return entityplayer == shootingEntity;
+        } else
+        {
+            return false;
         }
-
-        p_70014_1_.setString("ownerName", this.throwerName == null ? "" : this.throwerName);
     }
 
-    public void readEntityFromNBT(NBTTagCompound p_70037_1_) {
-        this.xTile = p_70037_1_.getShort("xTile");
-        this.yTile = p_70037_1_.getShort("yTile");
-        this.zTile = p_70037_1_.getShort("zTile");
-        this.inTile = Block.getBlockById(p_70037_1_.getByte("inTile") & 255);
-        this.inGround = p_70037_1_.getByte("inGround") == 1;
-        this.throwerName = p_70037_1_.getString("ownerName");
+    @Override
+    public void onCollideWithPlayer(EntityPlayer entityplayer)
+    {
+        if (inGround && arrowShake <= 0)
+        {
+            if (canPickup(entityplayer))
+            {
+                if (!worldObj.isRemote)
+                {
+                    ItemStack item = getPickupItem();
+                    if (item == null) return;
 
-        if (this.throwerName != null && this.throwerName.length() == 0) {
-            this.throwerName = null;
+                    if (pickupMode == PICKUP_CREATIVE && entityplayer.capabilities.isCreativeMode || entityplayer.inventory.addItemStackToInventory(item))
+                    {
+                        worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
+                        onItemPickup(entityplayer);
+                        setDead();
+                    }
+                }
+            }
         }
     }
 
-    private float muzzleVelocity;
-    private float spread;
+    protected void onItemPickup(EntityPlayer entityplayer)
+    {
+        entityplayer.onItemPickup(this, 1);
+    }
 
-    private int xTile = -1;
-    private int yTile = -1;
-    private int zTile = -1;
-    private Block inTile;
-    private boolean inGround;
-    private Entity thrower;
-    private String throwerName;
-    private int ticksInGround;
-    private int ticksInAir;
-    private static final String __OBFID = "CL_00001723";
+    @Override
+    @SideOnly(Side.CLIENT)
+    public float getShadowSize()
+    {
+        return 0.0F;
+    }
+
+    @Override
+    protected boolean canTriggerWalking()
+    {
+        return false;
+    }
+
+    @Override
+    public void writeEntityToNBT(NBTTagCompound nbttagcompound)
+    {
+        nbttagcompound.setShort("xTile", (short) xTile);
+        nbttagcompound.setShort("yTile", (short) yTile);
+        nbttagcompound.setShort("zTile", (short) zTile);
+        nbttagcompound.setByte("inTile", (byte) Block.getIdFromBlock(inTile));
+        nbttagcompound.setByte("inData", (byte) inData);
+        nbttagcompound.setByte("shake", (byte) arrowShake);
+        nbttagcompound.setBoolean("inGround", inGround);
+        nbttagcompound.setBoolean("beenInGround", beenInGround);
+        nbttagcompound.setByte("pickup", (byte) pickupMode);
+    }
+
+    @Override
+    public void readEntityFromNBT(NBTTagCompound nbttagcompound)
+    {
+        xTile = nbttagcompound.getShort("xTile");
+        yTile = nbttagcompound.getShort("yTile");
+        zTile = nbttagcompound.getShort("zTile");
+        inTile = Block.getBlockById(nbttagcompound.getByte("inTile") & 0xFF);
+        inData = nbttagcompound.getByte("inData") & 0xFF;
+        arrowShake = nbttagcompound.getByte("shake") & 0xFF;
+        inGround = nbttagcompound.getBoolean("inGround");
+        beenInGround = nbttagcompound.getBoolean("beenInGrond");
+        pickupMode = nbttagcompound.getByte("pickup");
+    }
 }

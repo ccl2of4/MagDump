@@ -11,9 +11,6 @@ public class EntityBuckShot extends EntityCartridge {
     public EntityBuckShot(World world, Entity entity) {
         super(world, entity);
     }
-    public EntityBuckShot(World world, double x, double y, double z) {
-        super(world, x, y, z);
-    }
 
     @Override
     public void onUpdate() {

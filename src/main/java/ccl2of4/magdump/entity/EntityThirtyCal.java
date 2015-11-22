@@ -11,8 +11,5 @@ public class EntityThirtyCal extends EntityCartridge {
     public EntityThirtyCal(World world, Entity entity) {
         super(world, entity);
     }
-    public EntityThirtyCal(World world, double x, double y, double z) {
-        super(world, x, y, z);
-    }
 
 }
