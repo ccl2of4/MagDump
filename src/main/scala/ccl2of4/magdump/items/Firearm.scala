@@ -4,7 +4,7 @@ import ccl2of4.magdump.ItemStackMagDumpAddOns
 import ccl2of4.magdump.entity.EntityCartridge
 import ccl2of4.magdump.items.component.Magazine
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{EnumAction, Item, ItemStack}
 import net.minecraft.world.World
@@ -101,7 +101,7 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
     recoil(entityPlayer)
 
     if (!world.isRemote) {
-      val cartridge = cartridgeClass.getConstructor(classOf[World], classOf[EntityLivingBase])
+      val cartridge = cartridgeClass.getConstructor(classOf[World], classOf[Entity])
         .newInstance(world, entityPlayer)
       world.spawnEntityInWorld(cartridge)
     }
