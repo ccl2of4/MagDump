@@ -1,6 +1,5 @@
 package ccl2of4.magdump.entity;
 
-import ccl2of4.magdump.entity.bullet.EntityBullet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityThrowable;
@@ -19,15 +18,15 @@ public class EntityCartridge extends EntityThrowable {
     @Override
     public void onUpdate() {
         super.onUpdate();
-        spawnPellets();
+        spawnBullets();
         setDead();
     }
 
     @Override
     protected void onImpact(MovingObjectPosition p_70184_1_) {}
 
-    private void spawnPellets() {
-        if (!shouldSpawnPellets()) {
+    private void spawnBullets() {
+        if (!shouldSpawnBullets()) {
             return;
         }
 
@@ -37,7 +36,7 @@ public class EntityCartridge extends EntityThrowable {
         }
     }
 
-    private boolean shouldSpawnPellets() {
+    private boolean shouldSpawnBullets() {
         return !this.worldObj.isRemote && this.getThrower() != null;
     }
 

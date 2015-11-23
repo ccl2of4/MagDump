@@ -1,7 +1,6 @@
 package ccl2of4.magdump
 
-import ccl2of4.magdump.entity.EntityCartridge
-import ccl2of4.magdump.entity.bullet.EntityBullet
+import ccl2of4.magdump.entity.{EntityBullet, EntityCartridge}
 import ccl2of4.magdump.items._
 import ccl2of4.magdump.render.RenderCartridge
 import cpw.mods.fml.client.registry.RenderingRegistry
@@ -30,7 +29,7 @@ object MagDump {
     GameRegistry.registerItem(ThirtyCal, "thirtyCal")
     GameRegistry.registerItem(BuckShot, "buckShot")
     EntityRegistry.registerModEntity(classOf[EntityBullet], "bullet", 11, this, 16, 20, true)
-    EntityRegistry.registerModEntity(classOf[EntityCartridge], "buckShot", 11, this, 16, 20, true)
+    EntityRegistry.registerModEntity(classOf[EntityCartridge], "cartridge", 11, this, 16, 20, true)
   }
 
   @EventHandler
