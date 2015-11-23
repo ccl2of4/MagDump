@@ -1,4 +1,4 @@
-package ccl2of4.magdump.entity.bullet;
+package ccl2of4.magdump.entity;
 
 import java.util.List;
 
