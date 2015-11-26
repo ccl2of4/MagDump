@@ -8,10 +8,12 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.world.World
 
-class Magazine(cartridgeName: String, cartridgeClass: Class[_ <: EntityCartridge], maxCapacity: Int) {
+class Magazine(cartridgeName: String, cartridgeClass: Class[_ <: EntityCartridge], _maxCapacity: Int) {
 
   class MagazineOutOfAmmoException extends Exception
   class MagazineCantReloadException extends Exception
+
+  def maxCapacity: Int = _maxCapacity
 
   def numCartridges(itemStack: ItemStack): Int =
     itemStack.magazineSubTagCompound.getInteger("numCartridges")
@@ -42,11 +44,9 @@ class Magazine(cartridgeName: String, cartridgeClass: Class[_ <: EntityCartridge
       throw new MagazineCantReloadException
     }
 
-    setNumCartridges(itemStack, 0)
-
     val item = GameRegistry.findItem("MagDump", cartridgeName)
 
-    0.until(maxCapacity).toStream
+    numCartridges(itemStack).until(maxCapacity).toStream
       .takeWhile { _ =>
       entityPlayer.inventory.hasItem(item)
     }

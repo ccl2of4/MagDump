@@ -3,6 +3,7 @@ package ccl2of4.magdump.items
 import ccl2of4.magdump.ItemStackMagDumpAddOns
 import ccl2of4.magdump.entity.EntityCartridge
 import ccl2of4.magdump.items.component.Magazine
+import ccl2of4.magdump.keyhandler.ReloadKeyHandler
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
@@ -26,7 +27,7 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
     if (RELOADED == state(itemStack)) {
       entityPlayer.setItemInUse(itemStack, getMaxItemUseDuration(itemStack))
     } else if (RELOADING == state(itemStack)) {
-      if (magazine.canReload(itemStack, entityPlayer)) {
+      if (shouldReload(itemStack, entityPlayer)) {
         entityPlayer.setItemInUse(itemStack, getMaxItemUseDuration(itemStack))
         onReloadStarted(itemStack, entityPlayer)
       }
@@ -37,13 +38,14 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
     itemStack
   }
 
+  def shouldReload(itemStack: ItemStack, entityPlayer: EntityPlayer): Boolean =
+    (magazine.canReload(itemStack, entityPlayer)
+      && magazine.numCartridges(itemStack) != magazine.maxCapacity)
+
   override def onPlayerStoppedUsing(itemStack: ItemStack, world: World, entityPlayer: EntityPlayer, count: Int): Unit = {
     val tickNum = this.tickNum(itemStack, count)
     if (FIRING == state(itemStack)) {
       onFiringFinished(itemStack, entityPlayer, tickNum)
-      if (magazine.isEmpty(itemStack)) {
-        setState(itemStack, RELOADING)
-      }
     } else if (RELOADED == state(itemStack)) {
       setState(itemStack, FIRING)
     }
@@ -55,6 +57,17 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
       onReloadTick(itemStack, entityPlayer, tickNum)
     } else if (FIRING == state(itemStack)) {
       onFiringTick(itemStack, entityPlayer, tickNum)
+    }
+  }
+
+  override def onUpdate(itemStack : ItemStack, world : World, entity : Entity, count : Int, bool : Boolean) {
+    super.onUpdate(itemStack, world, entity, count, bool)
+    val entityPlayer = entity.asInstanceOf[EntityPlayer]
+
+    if (ReloadKeyHandler.isKeyPressed) {
+      setState(itemStack, RELOADING)
+    } else if (state(itemStack) != RELOADED) {
+      setState(itemStack, FIRING)
     }
   }
 

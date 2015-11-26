@@ -2,9 +2,10 @@ package ccl2of4.magdump
 
 import ccl2of4.magdump.entity.{EntityBullet, EntityCartridge}
 import ccl2of4.magdump.items._
+import ccl2of4.magdump.keyhandler.ReloadKeyHandler
 import ccl2of4.magdump.render.RenderCartridge
 import cpw.mods.fml.client.registry.RenderingRegistry
-import cpw.mods.fml.common.Mod
+import cpw.mods.fml.common.{FMLCommonHandler, Mod}
 import cpw.mods.fml.common.Mod.EventHandler
 import cpw.mods.fml.common.event.{FMLInitializationEvent, FMLPreInitializationEvent}
 import cpw.mods.fml.common.registry.{EntityRegistry, GameRegistry}
@@ -30,6 +31,12 @@ object MagDump {
     GameRegistry.registerItem(BuckShot, "buckShot")
     EntityRegistry.registerModEntity(classOf[EntityBullet], "bullet", 11, this, 16, 20, true)
     EntityRegistry.registerModEntity(classOf[EntityCartridge], "cartridge", 11, this, 16, 20, true)
+  }
+
+  @EventHandler
+  def registerKeyBindings(event: FMLInitializationEvent): Unit = {
+    FMLCommonHandler.instance().bus().register(ReloadKeyHandler)
+    ReloadKeyHandler.registerBindings()
   }
 
   @EventHandler
