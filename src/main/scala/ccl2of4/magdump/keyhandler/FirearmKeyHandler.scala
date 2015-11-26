@@ -6,20 +6,20 @@ import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent
 import net.minecraft.client.settings.KeyBinding
 import org.lwjgl.input.Keyboard
 
-object ReloadKeyHandler {
+object FirearmKeyHandler {
 
-  def isKeyPressed: Boolean = _keyPressed
+  def isReloadKeyPressed: Boolean = _reloadKeyPressed
 
   def registerBindings(): Unit = {
-    ClientRegistry.registerKeyBinding(_keyBinding)
+    ClientRegistry.registerKeyBinding(_reloadKeyBinding)
   }
 
   @SubscribeEvent
   def onKeyInput(event: KeyInputEvent): Unit = {
-    _keyPressed = _keyBinding.isPressed
+    _reloadKeyPressed = _reloadKeyBinding.isPressed
   }
 
-  private var _keyPressed = false
-  private val _keyBinding = new KeyBinding("key.magdump.desc", Keyboard.KEY_R, "key.magdump.control")
+  private var _reloadKeyPressed = false
+  private val _reloadKeyBinding = new KeyBinding("key.magdump.reload", Keyboard.KEY_R, "key.magdump.control")
 
 }

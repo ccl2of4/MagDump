@@ -2,14 +2,14 @@ package ccl2of4.magdump
 
 import ccl2of4.magdump.entity.{EntityBullet, EntityCartridge}
 import ccl2of4.magdump.items._
-import ccl2of4.magdump.keyhandler.ReloadKeyHandler
+import ccl2of4.magdump.keyhandler.FirearmKeyHandler
 import ccl2of4.magdump.render.RenderCartridge
 import cpw.mods.fml.client.registry.RenderingRegistry
 import cpw.mods.fml.common.{FMLCommonHandler, Mod}
 import cpw.mods.fml.common.Mod.EventHandler
 import cpw.mods.fml.common.event.{FMLInitializationEvent, FMLPreInitializationEvent}
 import cpw.mods.fml.common.registry.{EntityRegistry, GameRegistry}
-import cpw.mods.fml.relauncher.{Side, SideOnly}
+import cpw.mods.fml.relauncher.{SideOnly, Side}
 import org.apache.logging.log4j.Logger
 
 @Mod(modid = "MagDump", name = "MagDump", version = "0.0.1", modLanguage = "scala")
@@ -34,9 +34,10 @@ object MagDump {
   }
 
   @EventHandler
+  @SideOnly(Side.CLIENT)
   def registerKeyBindings(event: FMLInitializationEvent): Unit = {
-    FMLCommonHandler.instance().bus().register(ReloadKeyHandler)
-    ReloadKeyHandler.registerBindings()
+    FMLCommonHandler.instance().bus().register(FirearmKeyHandler)
+    FirearmKeyHandler.registerBindings()
   }
 
   @EventHandler

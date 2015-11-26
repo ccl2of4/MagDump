@@ -3,7 +3,7 @@ package ccl2of4.magdump.items
 import ccl2of4.magdump.ItemStackMagDumpAddOns
 import ccl2of4.magdump.entity.EntityCartridge
 import ccl2of4.magdump.items.component.Magazine
-import ccl2of4.magdump.keyhandler.ReloadKeyHandler
+import ccl2of4.magdump.keyhandler.FirearmKeyHandler
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
@@ -64,7 +64,7 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
     super.onUpdate(itemStack, world, entity, count, bool)
     val entityPlayer = entity.asInstanceOf[EntityPlayer]
 
-    if (ReloadKeyHandler.isKeyPressed) {
+    if (FirearmKeyHandler.isReloadKeyPressed) {
       setState(itemStack, RELOADING)
     } else if (state(itemStack) != RELOADED) {
       setState(itemStack, FIRING)
