@@ -64,6 +64,10 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
     super.onUpdate(itemStack, world, entity, count, bool)
     val entityPlayer = entity.asInstanceOf[EntityPlayer]
 
+    if (entityPlayer.isUsingItem) {
+      return
+    }
+
     if (FirearmKeyHandler.isReloadKeyPressed) {
       setState(itemStack, RELOADING)
     } else if (state(itemStack) != RELOADED) {
