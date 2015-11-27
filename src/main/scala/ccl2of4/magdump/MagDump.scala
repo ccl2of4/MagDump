@@ -1,13 +1,14 @@
 package ccl2of4.magdump
 
-import ccl2of4.magdump.entity.{EntityBullet, EntityCartridge}
+import ccl2of4.magdump.entity.bullet.{EntityBullet762NATO, EntityBullet, EntityBulletBuckshot}
+import ccl2of4.magdump.entity.cartridge.{EntityCartridge762NATO, EntityCartridgeBuckshot, EntityCartridge}
 import ccl2of4.magdump.items._
 import ccl2of4.magdump.keyhandler.FirearmKeyHandler
-import ccl2of4.magdump.render.RenderCartridge
+import ccl2of4.magdump.render.RenderBullet
 import cpw.mods.fml.client.registry.RenderingRegistry
 import cpw.mods.fml.common.{FMLCommonHandler, Mod}
 import cpw.mods.fml.common.Mod.EventHandler
-import cpw.mods.fml.common.event.{FMLInitializationEvent, FMLPreInitializationEvent}
+import cpw.mods.fml.common.event.{FMLPostInitializationEvent, FMLInitializationEvent, FMLPreInitializationEvent}
 import cpw.mods.fml.common.registry.{EntityRegistry, GameRegistry}
 import cpw.mods.fml.relauncher.{SideOnly, Side}
 import org.apache.logging.log4j.Logger
@@ -23,17 +24,6 @@ object MagDump {
   }
 
   @EventHandler
-  def registerItems(event: FMLInitializationEvent): Unit = {
-    log.info("Registering items.")
-    GameRegistry.registerItem(M60, "m60")
-    GameRegistry.registerItem(CoachGun, "coachGun")
-    GameRegistry.registerItem(ThirtyCal, "thirtyCal")
-    GameRegistry.registerItem(BuckShot, "buckShot")
-    EntityRegistry.registerModEntity(classOf[EntityBullet], "bullet", 11, this, 16, 20, true)
-    EntityRegistry.registerModEntity(classOf[EntityCartridge], "cartridge", 11, this, 16, 20, true)
-  }
-
-  @EventHandler
   @SideOnly(Side.CLIENT)
   def registerKeyBindings(event: FMLInitializationEvent): Unit = {
     FMLCommonHandler.instance().bus().register(FirearmKeyHandler)
@@ -41,11 +31,26 @@ object MagDump {
   }
 
   @EventHandler
+  def registerItems(event: FMLInitializationEvent): Unit = {
+    log.info("Registering items.")
+    GameRegistry.registerItem(M60, "m60")
+    GameRegistry.registerItem(CoachGun, "coachGun")
+    GameRegistry.registerItem(ThirtyCal, "762NATO")
+    GameRegistry.registerItem(BuckShot, "buckShot")
+
+    EntityRegistry.registerModEntity(classOf[EntityCartridgeBuckshot], "cartridgeBuckshot", 1, this, 80, 1, false)
+    EntityRegistry.registerModEntity(classOf[EntityBulletBuckshot], "bulletBuckshot", 2, this, 80, 1, true)
+
+    EntityRegistry.registerModEntity(classOf[EntityCartridge762NATO], "cartridge762Nato", 3, this, 80, 1, false)
+    EntityRegistry.registerModEntity(classOf[EntityBullet762NATO], "bullet762Nato", 4, this, 80, 1, true)
+  }
+
+  @EventHandler
   @SideOnly(Side.CLIENT)
-  def registerRenderers(event: FMLInitializationEvent): Unit = {
+  def registerRenderers(event: FMLPostInitializationEvent): Unit = {
     log.info("Registering renderers,")
-    RenderingRegistry.registerEntityRenderingHandler(classOf[EntityBullet], RenderCartridge)
-    RenderingRegistry.registerEntityRenderingHandler(classOf[EntityCartridge], RenderCartridge)
+    RenderingRegistry.registerEntityRenderingHandler(classOf[EntityBulletBuckshot], RenderBullet)
+    RenderingRegistry.registerEntityRenderingHandler(classOf[EntityBullet762NATO], RenderBullet)
   }
 
 }

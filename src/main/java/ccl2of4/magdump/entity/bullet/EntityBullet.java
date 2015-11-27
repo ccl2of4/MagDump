@@ -1,4 +1,4 @@
-package ccl2of4.magdump.entity;
+package ccl2of4.magdump.entity.bullet;
 
 import cpw.mods.fml.common.registry.IThrowableEntity;
 import cpw.mods.fml.relauncher.Side;
@@ -18,7 +18,7 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
-public class EntityBullet extends EntityArrow implements IThrowableEntity {
+public abstract class EntityBullet extends EntityArrow implements IThrowableEntity {
 
     public EntityBullet(World world) {
         super(world);
@@ -40,20 +40,10 @@ public class EntityBullet extends EntityArrow implements IThrowableEntity {
         setThrowableHeading(motionX, motionY, motionZ, getMuzzleVelocity(), getSpread());
     }
 
-    public float getMuzzleVelocity() {
-        return 5.0F;
-    }
-    public float getSpread() {
-        return 2.0F;
-    }
-    public float getAirResistance()
-    {
-        return 0.99F;
-    }
-    public float getGravity()
-    {
-        return 0.05F;
-    }
+    protected abstract float getMuzzleVelocity();
+    protected abstract float getSpread();
+    protected abstract float getAirResistance();
+    protected abstract float getGravity();
 
     @Override
     public Entity getThrower()

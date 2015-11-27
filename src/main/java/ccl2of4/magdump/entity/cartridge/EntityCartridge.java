@@ -1,12 +1,15 @@
-package ccl2of4.magdump.entity;
+package ccl2of4.magdump.entity.cartridge;
 
+import ccl2of4.magdump.entity.bullet.EntityBullet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
-public class EntityCartridge extends EntityThrowable {
+import java.lang.reflect.InvocationTargetException;
+
+public abstract class EntityCartridge extends EntityThrowable {
 
     public EntityCartridge(World world) {
         super(world);
@@ -22,6 +25,9 @@ public class EntityCartridge extends EntityThrowable {
         setDead();
     }
 
+    protected abstract int getNumberOfBullets();
+    protected abstract Class<? extends EntityBullet> getBulletClass();
+
     @Override
     protected void onImpact(MovingObjectPosition p_70184_1_) {}
 
@@ -30,10 +36,21 @@ public class EntityCartridge extends EntityThrowable {
             return;
         }
 
-        for (int i = 0; i < 9; ++i) {
-            EntityBullet entity = new EntityBullet(this.worldObj, this.getThrower());
+        for (int i = 0; i < getNumberOfBullets(); ++i) {
+            EntityBullet entity = makeBullet();
             this.worldObj.spawnEntityInWorld(entity);
         }
+    }
+
+    private EntityBullet makeBullet() {
+        try {
+            return getBulletClass()
+                    .getConstructor(World.class, Entity.class)
+                    .newInstance(worldObj, getThrower());
+        } catch (ReflectiveOperationException e) {
+            System.out.println("Error instantiating class " + getBulletClass());
+        }
+        return null;
     }
 
     private boolean shouldSpawnBullets() {

@@ -1,7 +1,7 @@
 package ccl2of4.magdump.items
 
 import ccl2of4.magdump.ItemStackMagDumpAddOns
-import ccl2of4.magdump.entity.EntityCartridge
+import ccl2of4.magdump.entity.cartridge.EntityCartridge
 import ccl2of4.magdump.items.component.Magazine
 import ccl2of4.magdump.keyhandler.FirearmKeyHandler
 import net.minecraft.creativetab.CreativeTabs
@@ -10,7 +10,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{EnumAction, Item, ItemStack}
 import net.minecraft.world.World
 
-abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: Class[_ <: Entity], magazineCapacity: Int) extends Item {
+abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: Class[_ <: EntityCartridge], magazineCapacity: Int) extends Item {
 
   setCreativeTab(CreativeTabs.tabCombat)
 
@@ -62,9 +62,8 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
 
   override def onUpdate(itemStack : ItemStack, world : World, entity : Entity, count : Int, bool : Boolean) {
     super.onUpdate(itemStack, world, entity, count, bool)
-    val entityPlayer = entity.asInstanceOf[EntityPlayer]
 
-    if (entityPlayer.isUsingItem) {
+    if (!shouldHandleReloadInputs(entity)) {
       return
     }
 
@@ -74,6 +73,9 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
       setState(itemStack, FIRING)
     }
   }
+
+  private def shouldHandleReloadInputs(entity: Entity) =
+    entity.isInstanceOf[EntityPlayer] && !entity.asInstanceOf[EntityPlayer].isUsingItem
 
   protected def tickNum(itemStack: ItemStack, count: Int): Int =
     getMaxItemUseDuration(itemStack) - count
@@ -163,7 +165,7 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
 
   private def magazine = {
     if (null == _magazine) {
-      _magazine = new Magazine(cartridgeName, classOf[EntityCartridge], magazineCapacity)
+      _magazine = new Magazine(magazineCapacity, cartridgeName)
     }
     _magazine
   }

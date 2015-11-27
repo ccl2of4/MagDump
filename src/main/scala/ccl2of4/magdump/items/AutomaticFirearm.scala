@@ -1,10 +1,8 @@
 package ccl2of4.magdump.items
 
-import ccl2of4.magdump.entity.EntityCartridge
-import net.minecraft.entity.EntityLivingBase
+import ccl2of4.magdump.entity.cartridge.EntityCartridge
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
-import net.minecraft.world.World
 
 abstract class AutomaticFirearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: Class[_ <: EntityCartridge], magazineCapacity: Int, fireRate: Int) extends Firearm(reloadTicks, cartridgeName, cartridgeClass, magazineCapacity) {
 

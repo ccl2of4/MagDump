@@ -6,9 +6,9 @@ import net.minecraft.item.Item
 package object items {
 
   object ThirtyCal extends Item {
-    setUnlocalizedName("thirtyCal")
+    setUnlocalizedName("762NATO")
     setCreativeTab(CreativeTabs.tabCombat)
-    setTextureName("magdump:thirtyCal")
+    setTextureName("magdump:762NATO")
   }
 
   object BuckShot extends Item {

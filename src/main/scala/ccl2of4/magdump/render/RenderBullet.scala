@@ -6,7 +6,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.util.ResourceLocation
 import org.lwjgl.opengl.GL11
 
-object RenderCartridge extends Render {
+object RenderBullet extends Render {
 
   override def doRender(entity : Entity, d : Double, d1 : Double, d2 : Double, f : Float, f1 : Float): Unit = {
     bindEntityTexture(entity)

@@ -1,19 +1,14 @@
 package ccl2of4.magdump.items.component
 
-import ccl2of4.magdump.{MagDump, ItemStackMagDumpAddOns}
-import ccl2of4.magdump.entity.EntityCartridge
+import ccl2of4.magdump.ItemStackMagDumpAddOns
 import cpw.mods.fml.common.registry.GameRegistry
-import net.minecraft.entity.{EntityLivingBase, Entity}
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.{Item, ItemStack}
-import net.minecraft.world.World
+import net.minecraft.item.ItemStack
 
-class Magazine(cartridgeName: String, cartridgeClass: Class[_ <: EntityCartridge], _maxCapacity: Int) {
+class Magazine(val maxCapacity: Int, cartridgeName: String) {
 
   class MagazineOutOfAmmoException extends Exception
   class MagazineCantReloadException extends Exception
-
-  def maxCapacity: Int = _maxCapacity
 
   def numCartridges(itemStack: ItemStack): Int =
     itemStack.magazineSubTagCompound.getInteger("numCartridges")
