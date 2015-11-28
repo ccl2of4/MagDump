@@ -3,19 +3,19 @@ package ccl2of4.magdump.entity.bullet;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 
-public class EntityBullet762NATO extends EntityBullet {
+public class EntityBullet45ACP extends EntityBullet {
 
-    public EntityBullet762NATO(World world) {
+    public EntityBullet45ACP(World world) {
         super(world);
     }
 
-    public EntityBullet762NATO(World world, Entity entity) {
+    public EntityBullet45ACP(World world, Entity entity) {
         super(world, entity);
     }
 
     @Override
     public float getMuzzleVelocity() {
-        return 6.0F;
+        return 5.0F;
     }
 
     @Override

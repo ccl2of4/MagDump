@@ -5,16 +5,22 @@ import net.minecraft.item.Item
 
 package object items {
 
-  object ThirtyCal extends Item {
+  object ItemThirtyCal extends Item {
     setUnlocalizedName("762NATO")
     setCreativeTab(CreativeTabs.tabCombat)
     setTextureName("magdump:762NATO")
   }
 
-  object BuckShot extends Item {
+  object ItemBuckShot extends Item {
     setUnlocalizedName("buckShot")
     setCreativeTab(CreativeTabs.tabCombat)
     setTextureName("magdump:buckShot")
+  }
+  
+  object Item45ACP extends Item {
+    setUnlocalizedName("45ACP")
+    setCreativeTab(CreativeTabs.tabCombat)
+    setTextureName("magdump:45ACP")
   }
 
 }
