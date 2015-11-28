@@ -141,10 +141,12 @@ abstract class Firearm(reloadTicks: Int, cartridgeName: String, cartridgeClass: 
   }
 
   protected def recoil(entityPlayer: EntityPlayer): Unit = {
-    // val factor = 10F
-    // val x = Math.sin((entityPlayer.rotationYaw / 180F) * Math.PI) / factor
-    // val y = -Math.cos((entityPlayer.rotationYaw / 180F) * Math.PI) / factor
-    // entityPlayer.addVelocity(x, 0, y)
+    entityPlayer.rotationPitch -= {
+      if (entityPlayer.isSneaking) 1F else 2F
+    }
+    entityPlayer.rotationYaw += {
+      if (entityPlayer.isSneaking) 0.25F else 0.5F
+    }
   }
 
   protected def smoke(entityPlayer: EntityPlayer): Unit =
